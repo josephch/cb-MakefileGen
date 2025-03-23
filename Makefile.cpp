@@ -8,6 +8,7 @@
 #include <macrosmanager.h>
 #include "version.h"
 #include <annoyingdialog.h>
+#include "compilercommandgenerator.h"
 
 #include <wx/arrimpl.cpp>
 WX_DEFINE_OBJARRAY( cbMGArrayOfRules );
@@ -277,7 +278,7 @@ bool cbMGMakefile::getDependencies(ProjectBuildTarget *p_pTarget,Compiler* p_pCo
                         "Continue anyway?" );
 
 	// if (wxID_YES == cbMessageBox(lMsg, _("Warning"), wxICON_EXCLAMATION | wxYES_NO, (wxWindow *)Manager::Get()->GetAppWindow()))
-	AnnoyingDialog dlg(_("cbMakefileGen: Warning! Dependencies file is not exists"),lMsg,wxART_QUESTION,AnnoyingDialog::YES_NO,wxID_YES);
+	AnnoyingDialog dlg( _("cbMakefileGen: Warning! Dependencies file is not exists"),lMsg,wxART_QUESTION,AnnoyingDialog::YES_NO);
 	if( wxID_YES == dlg.ShowModal() )
 	{
             m_DependenciesIsNotExistsIsNoProblem = true;
@@ -467,7 +468,8 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
         #else
             Manager::Get()->GetLogManager()->DebugLog(wxString::Format( _("LinkerCmd: %s"), l_LinkerCmd.c_str()) );
         #endif
-            l_pCompiler->GenerateCommandLine( l_LinkerCmd,
+            cb::shared_ptr<CompilerCommandGenerator> generator(l_pCompiler->GetCommandGenerator(m_pProj));
+            generator->GenerateCommandLine( l_LinkerCmd,
                                               p_BuildTarget,
                                               NULL,
                                               l_OutFileNameFullPath,
@@ -554,7 +556,9 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
             Manager::Get()->GetLogManager()->DebugLog(wxString::Format( _("CompilerCmd: %s"), l_CompilerCmd.c_str()) );
         #endif
             /* FIXME: traps after next command */
-            l_pCompiler->GenerateCommandLine( l_CompilerCmd,
+
+            cb::shared_ptr<CompilerCommandGenerator> generator(l_pCompiler->GetCommandGenerator(m_pProj));
+            generator->GenerateCommandLine( l_CompilerCmd,
                                               p_BuildTarget,
                                               pf,
                                               l_SourceFile,
